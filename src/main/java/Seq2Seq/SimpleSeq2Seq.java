@@ -50,12 +50,14 @@ public class SimpleSeq2Seq {
         ComputationGraph graph = new ComputationGraph(conf2);
         graph.init();
 
+        // training
         MultiDataSet dataSet = getDataset();
         train(graph, epochs, dataSet);
 
-        INDArray encoderInput = Nd4j.create(new double[][][]{{{2, 3, 4}}});
-        INDArray decoderInput = Nd4j.create(new double[][][]{{{0}}});
-        test(graph, encoderInput, decoderInput);
+        // testing
+        INDArray encoderInputTest = Nd4j.create(new double[][][]{{{2, 3, 4}}});
+        INDArray decoderInputTest = Nd4j.create(new double[][][]{{{0}}});
+        test(graph, encoderInputTest, decoderInputTest);
     }
 
     static void train(ComputationGraph graph, int epochs, MultiDataSet dataSet) {
