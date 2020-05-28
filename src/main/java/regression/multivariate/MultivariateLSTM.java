@@ -1,8 +1,7 @@
-package solution.regression.Basic.Univariate;
+package regression.Multivariate;
 
 
 import org.deeplearning4j.core.storage.StatsStorage;
-import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.layers.LSTM;
@@ -18,35 +17,68 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.learning.config.RmsProp;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * This example is inspired by Jason Brownlee from Machine Learning Mastery
+ * Multivariate time series, Multi-in single out
  *
- * Src: https://machinelearningmastery.com/how-to-develop-lstm-models-for-time-series-forecasting/
  *
- * In this example, we create
+ * [[   10.0000,   15.0000,   25.0000],
+ *  [   20.0000,   25.0000,   45.0000],
+ *  [   30.0000,   35.0000,   65.0000],
+ *  [   40.0000,   45.0000,   85.0000],
+ *  [   50.0000,   55.0000,  105.0000],
+ *  [   60.0000,   65.0000,  125.0000],
+ *  [   70.0000,   75.0000,  145.0000],
+ *  [   80.0000,   85.0000,  165.0000],
+ *  [   90.0000,   95.0000,  185.0000]]
+ *
+ *  Example:
+ *  Input:
+ *  [[10.000, 15.000],
+ *   [20.000, 25.000]]
+ *
+ *  Output:
+ *  [[65.000]]
  */
 
-public class UnivariateLSTM {
+public class MultivariateLSTM {
+
     private static double learningRate = 0.001;
 
     public static void main(String[] args) {
-        // Step 1: Initialize the
-        double[] sequenceData = new double[]{10, 20, 30, 40, 50, 60, 70, 80, 90};
-        TimeSeriesUnivariateData data = new TimeSeriesUnivariateData(sequenceData,3,1);
-        INDArray feature = data.getFeatureMatrix();
-        INDArray label = data.getLabels();
-        int sequanceLength = data.getSequenceLength();
+
+        INDArray seq1 = Nd4j.create(new double[]{10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0});
+        INDArray seq2 = Nd4j.create(new double[]{15.0, 25.0, 35.0, 45.0, 55.0, 65.0, 75.0, 85.0, 95.0});
+        INDArray outputSeq = seq1.addRowVector(seq2);
+
+        List<INDArray> allInput = new ArrayList<>();
+        allInput.add(seq1);
+        allInput.add(seq2);
+
+        List<INDArray> allOutput = new ArrayList<>();
+        allOutput.add(outputSeq);
+
+        TimSeriesMultivariateData data = new TimSeriesMultivariateData(allInput, allOutput, 3);
+        System.out.println(data.getFeature());
+        System.out.println(data.getLabel());
+
+        INDArray feature = data.getFeature().permute(0,2,1);
+        INDArray label = data.getLabel();
+
         System.out.println("feature size: " + feature.shapeInfoToString());
         System.out.println("label size: " + label.shapeInfoToString());
+
         MultiLayerConfiguration config = new NeuralNetConfiguration.Builder()
                 .seed(123)
                 .updater(new RmsProp(learningRate))
                 .weightInit(WeightInit.XAVIER)
-                .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
+//                .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .miniBatch(false)
                 .list()
                 .layer(0, new LSTM.Builder()
-                        .nIn(sequanceLength)
+                        .nIn(2)
                         .nOut(50)
                         .activation(Activation.TANH)
                         .build())
@@ -57,7 +89,6 @@ public class UnivariateLSTM {
                         .activation(Activation.IDENTITY)
                         .build())
                 .build();
-
         MultiLayerNetwork network = new MultiLayerNetwork(config);
         network.init();
 
@@ -69,13 +100,6 @@ public class UnivariateLSTM {
             network.fit(feature, label);
         }
 
-        INDArray testInput1 = Nd4j.create(new double[]{10, 20, 30}).reshape(new int[]{1, 3, 1});
-        System.out.println(network.output(testInput1));
 
-        INDArray testInput2 = Nd4j.create(new double[]{20, 30, 40}).reshape(new int[]{1, 3, 1});
-        System.out.println(network.output(testInput2));
-
-        INDArray testInput3 = Nd4j.create(new double[]{50, 60, 70}).reshape(new int[]{1, 3, 1});
-        System.out.println(network.output(testInput3));
     }
 }

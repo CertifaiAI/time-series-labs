@@ -1,4 +1,5 @@
-package solution.regression.Basic.Univariate;
+package regression.Univariate;
+
 
 import org.deeplearning4j.core.storage.StatsStorage;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
@@ -14,38 +15,43 @@ import org.deeplearning4j.ui.model.storage.InMemoryStatsStorage;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.learning.config.Adam;
+import org.nd4j.linalg.learning.config.RmsProp;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
-public class UnivariateStackedLSTM {
+/**
+ * This example is inspired by Jason Brownlee from Machine Learning Mastery
+ *
+ * Src: https://machinelearningmastery.com/how-to-develop-lstm-models-for-time-series-forecasting/
+ *
+ * In this example, we create
+ */
+
+public class UnivariateLSTM {
     private static double learningRate = 0.001;
 
     public static void main(String[] args) {
+        // Step 1: Initialize the
         double[] sequenceData = new double[]{10, 20, 30, 40, 50, 60, 70, 80, 90};
-        TimeSeriesUnivariateData data = new TimeSeriesUnivariateData(sequenceData, 3, 1);
+        TimeSeriesUnivariateData data = new TimeSeriesUnivariateData(sequenceData,3,1);
         INDArray feature = data.getFeatureMatrix();
         INDArray label = data.getLabels();
         int sequanceLength = data.getSequenceLength();
-
+        System.out.println("feature size: " + feature.shapeInfoToString());
+        System.out.println("label size: " + label.shapeInfoToString());
         MultiLayerConfiguration config = new NeuralNetConfiguration.Builder()
                 .seed(123)
-                .updater(new Adam(learningRate))
+                .updater(new RmsProp(learningRate))
                 .weightInit(WeightInit.XAVIER)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .miniBatch(false)
                 .list()
                 .layer(0, new LSTM.Builder()
                         .nIn(sequanceLength)
-                        .nOut(30)
+                        .nOut(50)
                         .activation(Activation.TANH)
                         .build())
-                .layer(1, new LSTM.Builder()
-                        .nIn(30)
-                        .nOut(30)
-                        .activation(Activation.TANH)
-                        .build())
-                .layer(2, new RnnOutputLayer.Builder()
-                        .nIn(30)
+                .layer(1, new RnnOutputLayer.Builder()
+                        .nIn(50)
                         .nOut(1)
                         .lossFunction(LossFunctions.LossFunction.MSE)
                         .activation(Activation.IDENTITY)
@@ -72,5 +78,4 @@ public class UnivariateStackedLSTM {
         INDArray testInput3 = Nd4j.create(new double[]{50, 60, 70}).reshape(new int[]{1, 3, 1});
         System.out.println(network.output(testInput3));
     }
-
 }
