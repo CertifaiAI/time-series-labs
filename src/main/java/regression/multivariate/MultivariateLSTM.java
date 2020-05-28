@@ -1,4 +1,4 @@
-package regression.Multivariate;
+package regression.multivariate;
 
 
 import org.deeplearning4j.core.storage.StatsStorage;
@@ -60,7 +60,7 @@ public class MultivariateLSTM {
         List<INDArray> allOutput = new ArrayList<>();
         allOutput.add(outputSeq);
 
-        TimSeriesMultivariateData data = new TimSeriesMultivariateData(allInput, allOutput, 3);
+        TimeSeriesMultivariateData data = new TimeSeriesMultivariateData(allInput, allOutput, 3);
         System.out.println(data.getFeature());
         System.out.println(data.getLabel());
 

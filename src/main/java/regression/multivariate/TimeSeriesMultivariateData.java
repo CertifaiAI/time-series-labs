@@ -1,4 +1,4 @@
-package regression.Multivariate;
+package regression.multivariate;
 
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -7,7 +7,7 @@ import org.nd4j.linalg.indexing.NDArrayIndex;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TimSeriesMultivariateData {
+public class TimeSeriesMultivariateData {
     private List<INDArray> inputSequenceList;
     private List<INDArray> outputSequenceList;
     private INDArray data;
@@ -16,7 +16,7 @@ public class TimSeriesMultivariateData {
     private INDArray label;
 
 
-    public TimSeriesMultivariateData(List<INDArray> input, List<INDArray> output, int timeStep) {
+    public TimeSeriesMultivariateData(List<INDArray> input, List<INDArray> output, int timeStep) {
         this.inputSequenceList = new ArrayList<>();
         this.outputSequenceList = new ArrayList<>();
         this.splitSequenceOutput = new ArrayList<>();

@@ -1,4 +1,4 @@
-package regression.Univariate;
+package regression.univariate;
 
 import org.deeplearning4j.core.storage.StatsStorage;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;

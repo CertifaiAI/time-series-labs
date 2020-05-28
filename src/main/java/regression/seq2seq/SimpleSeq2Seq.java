@@ -1,4 +1,4 @@
-package seq2seq;
+package regression.seq2seq;
 
 import org.deeplearning4j.nn.api.Layer;
 import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;

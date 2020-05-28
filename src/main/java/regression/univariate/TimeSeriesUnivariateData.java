@@ -1,4 +1,4 @@
-package regression.Univariate;
+package regression.univariate;
 
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -8,6 +8,8 @@ import java.util.List;
 
 public class TimeSeriesUnivariateData {
 
+    private double[] timeSeriesSequence;
+    private int timeStep;
     private int numFeatures;
     private ArrayList<INDArray> data;
 
