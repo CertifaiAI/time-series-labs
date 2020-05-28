@@ -28,9 +28,11 @@ public class SimpleSeq2Seq {
     static int nHidden = 15;
     static int nOutput = 1;
 
-    public static void main(String[] args) {
-        Logger log = LoggerFactory.getLogger(SimpleSeq2Seq.class);
+    static int epochs = 400;
 
+    static Logger log = LoggerFactory.getLogger(SimpleSeq2Seq.class);
+
+    public static void main(String[] args) {
         ComputationGraphConfiguration conf2 = new NeuralNetConfiguration.Builder()
                 .seed(123)
                 .updater(new Adam(0.1))
@@ -48,12 +50,15 @@ public class SimpleSeq2Seq {
         ComputationGraph graph = new ComputationGraph(conf2);
         graph.init();
 
-        train(graph, 400);
-        test(graph);
-    }
-    static void train(ComputationGraph graph, int epochs){
         MultiDataSet dataSet = getDataset();
+        train(graph, epochs, dataSet);
 
+        INDArray encoderInput = Nd4j.create(new double[][][]{{{2, 3, 4}}});
+        INDArray decoderInput = Nd4j.create(new double[][][]{{{0}}});
+        test(graph, encoderInput, decoderInput);
+    }
+
+    static void train(ComputationGraph graph, int epochs, MultiDataSet dataSet) {
         graph.setListeners(new ScoreIterationListener(10));
 
         for (int epoch = 0; epoch < epochs; epoch++) {
@@ -61,26 +66,13 @@ public class SimpleSeq2Seq {
         }
     }
 
-    static void test(ComputationGraph graph){
-        INDArray encoderInput = Nd4j.create(
-                new double[][]{
-                        {2, 3, 4}}
-        );
-        encoderInput = Nd4j.expandDims(encoderInput, 0).permute(1, 0, 2);
-
-        INDArray decoderInput = Nd4j.create(
-                new double[][]{
-                        {0}}
-        );
-        decoderInput = Nd4j.expandDims(decoderInput, 0).permute(1, 0, 2);
-
+    static void test(ComputationGraph graph, INDArray encoderInput, INDArray decoderInput) {
         INDArray encState = graph.feedForward(new INDArray[]{encoderInput, decoderInput}, false, false).get("encoderState");
         org.deeplearning4j.nn.layers.recurrent.LSTM decoder = (org.deeplearning4j.nn.layers.recurrent.LSTM) graph.getLayer("decoder");
         Layer output = graph.getLayer("output");
         GraphVertex mergeVertex = graph.getVertex("merge");
-//        INDArray encState = mergeVertex.getInputs()[1];
 
-        for (int i = 0; i < 3; i++){
+        for (int i = 0; i < 3; i++) {
             mergeVertex.setInputs(decoderInput, encState);
             INDArray merged = mergeVertex.doForward(false, LayerWorkspaceMgr.noWorkspaces());
             INDArray decOutput = decoder.rnnTimeStep(merged, LayerWorkspaceMgr.noWorkspaces());
@@ -88,42 +80,39 @@ public class SimpleSeq2Seq {
 
             decoderInput = out;
 
-            System.out.println(out.getDouble());
+            log.info("y+" + (i + 1) + " forecast = " + out.getDouble());
         }
     }
 
-    static MultiDataSet getDataset(){
+    static MultiDataSet getDataset() {
         INDArray encoderInput = Nd4j.create(
-                new double[][]{
-                        {1, 2, 3},
-                        {2, 3, 4},
-                        {3, 4, 5},
-                        {4, 5, 6}}
+                new double[][][]{
+                        {{1, 2, 3}},
+                        {{2, 3, 4}},
+                        {{3, 4, 5}},
+                        {{4, 5, 6}}}
         );
-        encoderInput = Nd4j.expandDims(encoderInput, 0).permute(1, 0, 2);
 
         INDArray decoderInput = Nd4j.create(
-                new double[][]{
-                        {0, 4, 5, 6},
-                        {0, 5, 6, 7},
-                        {0, 6, 7, 8},
-                        {0, 7, 8, 9}}
+                new double[][][]{
+                        {{0, 4, 5, 6}},
+                        {{0, 5, 6, 7}},
+                        {{0, 6, 7, 8}},
+                        {{0, 7, 8, 9}}}
         );
-        decoderInput = Nd4j.expandDims(decoderInput, 0).permute(1, 0, 2);
 
         INDArray label = Nd4j.create(
-                new double[][]{
-                        {4, 5, 6, 0},
-                        {5, 6, 7, 0},
-                        {6, 7, 8, 0},
-                        {7, 8, 9, 0}}
+                new double[][][]{
+                        {{4, 5, 6, 0}},
+                        {{5, 6, 7, 0}},
+                        {{6, 7, 8, 0}},
+                        {{7, 8, 9, 0}}}
         );
-        label = Nd4j.expandDims(label, 0).permute(1, 0, 2);
 
-        INDArray inputMask = Nd4j.ones(4,3);
-        INDArray labelMask = Nd4j.ones(4,4);
+        INDArray inputMask = Nd4j.ones(4, 3);
+        INDArray labelMask = Nd4j.ones(4, 4);
 
-        return new org.nd4j.linalg.dataset.MultiDataSet(new INDArray[] { encoderInput, decoderInput }, new INDArray[] { label },
-                new INDArray[] { inputMask, labelMask }, new INDArray[] { labelMask });
+        return new org.nd4j.linalg.dataset.MultiDataSet(new INDArray[]{encoderInput, decoderInput}, new INDArray[]{label},
+                new INDArray[]{inputMask, labelMask}, new INDArray[]{labelMask});
     }
 }
