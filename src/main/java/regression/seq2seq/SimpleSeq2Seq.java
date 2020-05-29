@@ -15,7 +15,7 @@ import org.deeplearning4j.nn.workspace.LayerWorkspaceMgr;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.api.MultiDataSet;
+import org.nd4j.linalg.dataset.MultiDataSet;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.learning.config.Adam;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
@@ -114,7 +114,7 @@ public class SimpleSeq2Seq {
         INDArray inputMask = Nd4j.ones(4, 3);
         INDArray labelMask = Nd4j.ones(4, 4);
 
-        return new org.nd4j.linalg.dataset.MultiDataSet(new INDArray[]{encoderInput, decoderInput}, new INDArray[]{label},
+        return new MultiDataSet(new INDArray[]{encoderInput, decoderInput}, new INDArray[]{label},
                 new INDArray[]{inputMask, labelMask}, new INDArray[]{labelMask});
     }
 }

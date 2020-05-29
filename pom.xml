@@ -83,6 +83,14 @@
             <version>${slf4j.version}</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.datavec/datavec-local -->
+        <dependency>
+            <groupId>org.datavec</groupId>
+            <artifactId>datavec-local</artifactId>
+            <version>1.0.0-beta7</version>
+        </dependency>
+
+
     </dependencies>
 
 </project>
