@@ -10,14 +10,12 @@ public class TimeSeriesUnivariateData {
 
     private double[] timeSeriesSequence;
     private int timeStep;
-    private int numFeatures;
     private ArrayList<INDArray> data;
 
-    public TimeSeriesUnivariateData(double[] data, int timeStep, int numFeatures)
+    public TimeSeriesUnivariateData(double[] data, int timeStep)
     {
         this.timeSeriesSequence = data;
         this.timeStep = timeStep;
-        this.numFeatures = numFeatures;
         this.data = splitSequence(data, timeStep);
     }
 
@@ -68,20 +66,21 @@ public class TimeSeriesUnivariateData {
 
     public INDArray getFeatureMatrix() {
         INDArray feature = data.get(0);
-        //reshape from [samples, timesteps] into [samples, timesteps, features]
-        return feature.reshape(new int[]{(int) feature.shape()[0], (int) feature.shape()[1], numFeatures});
+        //reshape from [samples, timesteps] into [samples, timesteps, num of features], here the number of feature is 1
+        INDArray expandedDimArray = Nd4j.expandDims(feature, 2);
+        return expandedDimArray;
     }
 
     public INDArray getLabels() {
         INDArray label = data.get(1);
         //reshape from [samples, ] into [samples, timesteps, features]
-        return label.reshape(new int[]{(int) label.shape()[0], 1, 1});
+        INDArray expdim1 = Nd4j.expandDims(label, 1);
+        INDArray expdim2 = Nd4j.expandDims(expdim1, 2);
+        return expdim2;
     }
 
     public int getSequenceLength(){
         return (int) getFeatureMatrix().shape()[1];
     }
-
-
 
 }

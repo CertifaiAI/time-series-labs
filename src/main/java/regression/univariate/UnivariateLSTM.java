@@ -18,26 +18,48 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.learning.config.RmsProp;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
+import static regression.univariate.Helper.expandDimsHelper;
+
 /**
- * This example is inspired by Jason Brownlee from Machine Learning Mastery
+ * Simple Time Series Sequence Prediction using single layer LSTM
  *
+ * In this example, we will show you the method in performing time series prediction using synthetic time series data.
+ * We can perform the prediction in following steps:
+ *  1. Initialize the data
+ *      Here, we will generate a sequence of synthetic time series data, i.e. [10, 20, 30, 40, 50, 60, 70, 80, 90]
+ *
+ *  2. Preprocess the data into lagged features and labels.
+ *      In time series analysis, we need to provide a lagged feature sequence and their respective label.
+ *      For example, if the lagged feature is [[10,20,30]] and the label will be [40].
+ *
+ *  3. Setup the LSTM configuration
+ *
+ *  4. Setup UI server for training
+ *
+ *  5. Train the model
+ *
+ *  6. Perform time series predictions
+ *
+ * This example is inspired by Jason Brownlee from Machine Learning Mastery
  * Src: https://machinelearningmastery.com/how-to-develop-lstm-models-for-time-series-forecasting/
  *
- * In this example, we create
  */
 
 public class UnivariateLSTM {
     private static double learningRate = 0.001;
 
     public static void main(String[] args) {
-        // Step 1: Initialize the
+
+        // Step 1: Initialize the data
         double[] sequenceData = new double[]{10, 20, 30, 40, 50, 60, 70, 80, 90};
-        TimeSeriesUnivariateData data = new TimeSeriesUnivariateData(sequenceData,3,1);
+
+        // Step 2: Preprocess the data into lagged features and labels.
+        TimeSeriesUnivariateData data = new TimeSeriesUnivariateData(sequenceData,3);
         INDArray feature = data.getFeatureMatrix();
         INDArray label = data.getLabels();
-        int sequanceLength = data.getSequenceLength();
-        System.out.println("feature size: " + feature.shapeInfoToString());
-        System.out.println("label size: " + label.shapeInfoToString());
+
+        // Step 3: Setup the LSTM configuration
+        int sequenceLength = data.getSequenceLength();
         MultiLayerConfiguration config = new NeuralNetConfiguration.Builder()
                 .seed(123)
                 .updater(new RmsProp(learningRate))
@@ -46,7 +68,7 @@ public class UnivariateLSTM {
                 .miniBatch(false)
                 .list()
                 .layer(0, new LSTM.Builder()
-                        .nIn(sequanceLength)
+                        .nIn(sequenceLength)
                         .nOut(50)
                         .activation(Activation.TANH)
                         .build())
@@ -61,21 +83,27 @@ public class UnivariateLSTM {
         MultiLayerNetwork network = new MultiLayerNetwork(config);
         network.init();
 
+        // Step 4: Setup UI server for training
         UIServer server = UIServer.getInstance();
         StatsStorage storage = new InMemoryStatsStorage();
         server.attach(storage);
         network.setListeners(new StatsListener(storage, 10));
+
+        // Step 5: Train the model
         for (int i = 0; i < 10000; i++) {
             network.fit(feature, label);
         }
 
-        INDArray testInput1 = Nd4j.create(new double[]{10, 20, 30}).reshape(new int[]{1, 3, 1});
+        // Step 6: Perform time series predictions
+        // Note: We need to reshape from [samples, timesteps] into [samples, timesteps, num of features], here the number of feature is 1
+        INDArray testInput1 = expandDimsHelper(Nd4j.create(new double[]{10, 20, 30}));
         System.out.println(network.output(testInput1));
 
-        INDArray testInput2 = Nd4j.create(new double[]{20, 30, 40}).reshape(new int[]{1, 3, 1});
+        INDArray testInput2 = expandDimsHelper(Nd4j.create(new double[]{20, 30, 40}));
         System.out.println(network.output(testInput2));
 
-        INDArray testInput3 = Nd4j.create(new double[]{50, 60, 70}).reshape(new int[]{1, 3, 1});
+        INDArray testInput3 = expandDimsHelper(Nd4j.create(new double[]{50, 60, 70}));
         System.out.println(network.output(testInput3));
+
     }
 }
