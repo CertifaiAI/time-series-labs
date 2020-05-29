@@ -17,8 +17,6 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.learning.config.Adam;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
-import static regression.univariate.Helper.expandDimsHelper;
-
 /**
  * Simple Time Series Sequence Prediction using stacked LSTM (2 layers)
  *
@@ -100,13 +98,13 @@ public class UnivariateStackedLSTM {
 
         // Step 6: Perform time series predictions
         // Note: We need to reshape from [samples, timesteps] into [samples, timesteps, num of features], here the number of feature is 1
-        INDArray testInput1 = expandDimsHelper(Nd4j.create(new double[]{10, 20, 30}));
+        INDArray testInput1 = Nd4j.create(new double[][][] {{{10}, {20}, {30}}});
         System.out.println(network.output(testInput1));
 
-        INDArray testInput2 = expandDimsHelper(Nd4j.create(new double[]{20, 30, 40}));
+        INDArray testInput2 = Nd4j.create(new double[][][] {{{20}, {30}, {40}}});
         System.out.println(network.output(testInput2));
 
-        INDArray testInput3 = expandDimsHelper(Nd4j.create(new double[]{50, 60, 70}));
+        INDArray testInput3 = Nd4j.create(new double[][][] {{{40}, {50}, {60}}});
         System.out.println(network.output(testInput3));
     }
 
