@@ -1,17 +1,5 @@
 package regression.seq2seq;
 
-import org.datavec.api.records.reader.RecordReader;
-import org.datavec.api.records.reader.impl.csv.CSVRecordReader;
-import org.datavec.api.split.FileSplit;
-import org.datavec.api.transform.TransformProcess;
-import org.datavec.api.transform.schema.Schema;
-import org.datavec.api.transform.transform.time.DeriveColumnsFromTimeTransform;
-import org.datavec.api.util.ndarray.RecordConverter;
-import org.datavec.api.writable.Writable;
-import org.datavec.local.transforms.LocalTransformExecutor;
-import org.joda.time.DateTimeFieldType;
-import org.joda.time.DateTimeZone;
-import org.nd4j.common.io.ClassPathResource;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.MultiDataSet;
 import org.nd4j.linalg.dataset.api.MultiDataSetPreProcessor;
@@ -20,56 +8,58 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.INDArrayIndex;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 
-import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 public class SalesDemandIterator implements MultiDataSetIterator {
 
-    private int batchSize;
-    private int currentBatch=0;
-    private int inputSequence;
-    private int outputSequence;
-    private int totalBatch ;
-    private long featureSize;
+    private final int batchSize;
+    private final int inputSequence;
+    private final int outputSequence;
+    private final int totalBatch;
+    private final long featureSize;
+    private final int labelIndex;
     List<INDArray> sequenceData;
+    private int currentBatch = 0;
 
-//    private List<Integer> data = new ArrayList<>();
 
-    public SalesDemandIterator(INDArray data, int batchSize, int inputSequence, int outputSequence) throws IOException, InterruptedException {
+    public SalesDemandIterator(INDArray data, int batchSize, int inputSequence, int outputSequence) {
         this.batchSize = batchSize;
         this.inputSequence = inputSequence;
         this.outputSequence = outputSequence;
-        this.featureSize = data.size(1) - 1;
+        this.featureSize = 4;
+        this.labelIndex = 4;
 
         this.sequenceData = createSequence(data);
         this.totalBatch = this.sequenceData.size() / batchSize;
-
-
     }
-    
-    private List<INDArray> createSequence (INDArray data){
+
+    // organize data into sequences
+    private List<INDArray> createSequence(INDArray data) {
         List<INDArray> sequenceData = new ArrayList<>();
         int sequenceLength = this.inputSequence + this.outputSequence;
         long dataLength = data.size(0);
 
         long totalSample = dataLength - sequenceLength + 1;
 
-        for(int i = 0; i<totalSample;i++){
-            sequenceData.add(data.get(NDArrayIndex.interval(i,i+sequenceLength),NDArrayIndex.all()));
+        for (int i = 0; i < totalSample; i++) {
+            sequenceData.add(data.get(NDArrayIndex.interval(i, i + sequenceLength), NDArrayIndex.all()));
         }
         return sequenceData;
     }
 
-    private List<INDArray> prepareSample(INDArray sample){
-        INDArray label = sample.get(NDArrayIndex.all(), NDArrayIndex.point(3));
-        INDArray feature = sample.get(NDArrayIndex.all(), NDArrayIndex.interval(0, 3));
+    // prepare input data for encoder and decoder and decoder label
+    // decoder input = y, y+1, y+2, ..., y+n
+    // decoder label = y+1, y+2, y+3, ..., y+n
+    private List<INDArray> prepareSample(INDArray sample) {
+        INDArray label = sample.get(NDArrayIndex.all(), NDArrayIndex.point(this.labelIndex));
+        // exclude year column
+        INDArray feature = sample.get(NDArrayIndex.all(), NDArrayIndex.interval(1, this.labelIndex+1));
 
-        INDArray encoderInput = feature.get(NDArrayIndex.interval(0,this.inputSequence), NDArrayIndex.all()).permute(1,0);
+        INDArray encoderInput = feature.get(NDArrayIndex.interval(0, this.inputSequence), NDArrayIndex.all()).permute(1, 0);
         INDArray decoderInput = label.get(
-                NDArrayIndex.interval(this.inputSequence-1, this.inputSequence + this.outputSequence - 1)
+                NDArrayIndex.interval(this.inputSequence - 1, this.inputSequence + this.outputSequence - 1)
         );
         INDArray decoderLabel = label.get(
                 NDArrayIndex.interval(this.inputSequence, this.inputSequence + this.outputSequence)
@@ -87,8 +77,8 @@ public class SalesDemandIterator implements MultiDataSetIterator {
         INDArray inputMask = Nd4j.ones(this.batchSize, this.inputSequence);
         INDArray labelMask = Nd4j.ones(this.batchSize, this.outputSequence);
 
-        for(int i =0;i<this.batchSize;i++){
-            int sampleIndex = currentBatch*this.batchSize+i;
+        for (int i = 0; i < this.batchSize; i++) {
+            int sampleIndex = currentBatch * this.batchSize + i;
             List<INDArray> sample = prepareSample(this.sequenceData.get(sampleIndex));
 
             encoderInput.put(new INDArrayIndex[]{NDArrayIndex.point(i), NDArrayIndex.all(), NDArrayIndex.all()}, sample.get(0));
@@ -103,13 +93,13 @@ public class SalesDemandIterator implements MultiDataSetIterator {
     }
 
     @Override
-    public void setPreProcessor(MultiDataSetPreProcessor multiDataSetPreProcessor) {
-
+    public MultiDataSetPreProcessor getPreProcessor() {
+        return null;
     }
 
     @Override
-    public MultiDataSetPreProcessor getPreProcessor() {
-        return null;
+    public void setPreProcessor(MultiDataSetPreProcessor multiDataSetPreProcessor) {
+
     }
 
     @Override
@@ -129,18 +119,33 @@ public class SalesDemandIterator implements MultiDataSetIterator {
 
     @Override
     public boolean hasNext() {
-        if (this.currentBatch >= this.totalBatch){
-            return false;
-        }else{
-            return true;
-        }
+        return this.currentBatch < this.totalBatch;
     }
 
     @Override
     public MultiDataSet next() {
-        if(hasNext()){
+        if (hasNext()) {
             return next(this.currentBatch);
         }
         return null;
+    }
+
+    public MultiDataSet getLastSequence(){
+        INDArray encoderInput = Nd4j.zeros(1, this.featureSize, this.inputSequence);
+        INDArray decoderInput = Nd4j.zeros(1, 1, this.outputSequence);
+        INDArray label = Nd4j.zeros(1, 1, this.outputSequence);
+
+        INDArray inputMask = Nd4j.ones(1, this.inputSequence);
+        INDArray labelMask = Nd4j.ones(1, this.outputSequence);
+
+        INDArray lastSample = this.sequenceData.get(this.sequenceData.size()-1);
+        List<INDArray> lastSamplePrepared = prepareSample(lastSample);
+
+        encoderInput.put(new INDArrayIndex[]{NDArrayIndex.point(0), NDArrayIndex.all(), NDArrayIndex.all()}, lastSamplePrepared.get(0));
+        decoderInput.put(new INDArrayIndex[]{NDArrayIndex.point(0), NDArrayIndex.all(), NDArrayIndex.all()}, lastSamplePrepared.get(1));
+        label.put(new INDArrayIndex[]{NDArrayIndex.point(0), NDArrayIndex.all(), NDArrayIndex.all()}, lastSamplePrepared.get(2));
+
+        return new MultiDataSet(new INDArray[]{encoderInput, decoderInput}, new INDArray[]{label},
+                new INDArray[]{inputMask, labelMask}, new INDArray[]{labelMask});
     }
 }
