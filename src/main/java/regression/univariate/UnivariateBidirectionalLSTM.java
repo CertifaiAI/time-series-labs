@@ -49,15 +49,42 @@ public class UnivariateBidirectionalLSTM {
 
     public static void main(String[] args) {
 
-        // Step 1: Initialize the data
+        /*
+		#### LAB STEP 1 #####
+		Initialize the data
+        */
         double[] sequenceData = new double[]{10, 20, 30, 40, 50, 60, 70, 80, 90};
 
-        // Step 2: Preprocess the data into lagged features and labels.
+        /*
+		#### LAB STEP 2 #####
+		Preprocess the data into lagged features and labels.
+		In this step, we will split the data using sliding windows method of window size (time step) 3 and stride of 1
+        The data will be processed into following sequence
+            +-------+--------------+-------+
+            | Batch | Sequence     | Label |
+            +-------+--------------+-------+
+            | 1     | [10, 20, 30] | 40    |
+            +-------+--------------+-------+
+            | 2     | [20, 30, 40] | 50    |
+            +-------+--------------+-------+
+            | 3     | [30, 40, 50] | 60    |
+            +-------+--------------+-------+
+            | 4     | [40, 50, 60] | 70    |
+            +-------+--------------+-------+
+            | 5     | [50, 60, 70] | 80    |
+            +-------+--------------+-------+
+        */
         TimeSeriesUnivariateData data = new TimeSeriesUnivariateData(sequenceData,3);
         INDArray feature = data.getFeatureMatrix();
         INDArray label = data.getLabels();
+        //uncomment out the following to look at all features and labels
+        //System.out.println(feature);
+        //System.out.println(label);
 
-        // Step 3: Setup the Bidirectional LSTM configuration
+        /*
+		#### LAB STEP 3 #####
+		Setup the Bidirectional LSTM configuration
+        */
         int sequenceLength = data.getSequenceLength();
         MultiLayerConfiguration config = new NeuralNetConfiguration.Builder()
                 .seed(123)
@@ -82,18 +109,27 @@ public class UnivariateBidirectionalLSTM {
         MultiLayerNetwork network = new MultiLayerNetwork(config);
         network.init();
 
-        // Step 4: Setup UI server for training
+        /*
+		#### LAB STEP 4 #####
+		Setup UI server for training
+        */
         UIServer server = UIServer.getInstance();
         StatsStorage storage = new InMemoryStatsStorage();
         server.attach(storage);
         network.setListeners(new StatsListener(storage, 10));
 
-        // Step 5: Train the model
+        /*
+		#### LAB STEP 5 #####
+		Train the model
+        */
         for (int i = 0; i < 10000; i++) {
             network.fit(feature, label);
         }
 
-        // Step 6: Perform time series predictions
+        /*
+		#### LAB STEP 6 #####
+		Perform time series predictions
+        */
         // Note: We need to reshape from [samples, timesteps] into [samples, timesteps, num of features], here the number of feature is 1
         INDArray testInput1 = Nd4j.create(new double[][][] {{{10}, {20}, {30}}});
         System.out.println(network.output(testInput1));
