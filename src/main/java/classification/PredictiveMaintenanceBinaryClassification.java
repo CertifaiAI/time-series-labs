@@ -11,22 +11,22 @@ import org.datavec.api.transform.sequence.comparator.NumericalColumnComparator;
 import org.datavec.api.writable.Writable;
 import org.datavec.local.transforms.LocalTransformExecutor;
 import org.deeplearning4j.datasets.datavec.SequenceRecordReaderDataSetIterator;
-import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.layers.LSTM;
 import org.deeplearning4j.nn.conf.layers.RnnOutputLayer;
-import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
-import org.nd4j.common.io.ClassPathResource;
 import org.nd4j.evaluation.classification.Evaluation;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.dataset.api.preprocessor.DataNormalization;
 import org.nd4j.linalg.dataset.api.preprocessor.NormalizerMinMaxScaler;
+import org.nd4j.linalg.io.ClassPathResource;
 import org.nd4j.linalg.learning.config.Adam;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
+import org.nd4j.linalg.schedule.CycleSchedule;
+import org.nd4j.linalg.schedule.ScheduleType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +41,7 @@ public class PredictiveMaintenanceBinaryClassification {
     static int batchSize = 128;
     static int numOfLabel = 2;
     static int labelIndex = 20;
-    static int epochs = 5;
+    static int epochs = 100;
 
     static Logger log = LoggerFactory.getLogger(PredictiveMaintenanceBinaryClassification.class);
 
@@ -117,25 +117,37 @@ public class PredictiveMaintenanceBinaryClassification {
         trainIter.setPreProcessor(scaler);
         testIter.setPreProcessor(scaler);
 
+
+        // Scheduler
+//        Map<Integer,Double> learningRateSchedule = new HashMap<>();
+//        learningRateSchedule.put(0,0.01);
+//        learningRateSchedule.put(20,0.001); // learning rate reduced to 0.001 after 20 epochs
+//        learningRateSchedule.put(40,0.0001); // learning rate reduced to 0.0001 after 40 epochs
+//        MapSchedule mapScheduler = new MapSchedule(ScheduleType.EPOCH, learningRateSchedule);
+
+        CycleSchedule cycleSchedule = new CycleSchedule(ScheduleType.EPOCH, 0.00001, 0.01, epochs, (int) Math.round(epochs * 0.1), 0.1);
+
         int numInput = trainIter.inputColumns();
         MultiLayerConfiguration config = new NeuralNetConfiguration.Builder()
                 .seed(123)
                 .l2(0.00001)
                 .weightInit(WeightInit.XAVIER)
-                .updater(new Adam(0.001))
+                .updater(new Adam(cycleSchedule))
                 .list()
                 .layer(new LSTM.Builder()
                         .name("lstm")
                         .nIn(numInput)
                         .nOut(100)
                         .activation(Activation.TANH)
+                        .dropOut(0.8)
                         .build())
                 .layer(new LSTM.Builder()
                         .name("lstm2")
                         .nOut(50)
                         .activation(Activation.TANH)
+                        .dropOut(0.8)
                         .build())
-                .layer( new RnnOutputLayer.Builder()
+                .layer(new RnnOutputLayer.Builder()
                         .name("output")
                         .nOut(2)
                         .lossFunction(LossFunctions.LossFunction.MCXENT)
