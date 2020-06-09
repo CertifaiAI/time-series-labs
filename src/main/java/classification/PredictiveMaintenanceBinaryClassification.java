@@ -18,11 +18,11 @@ import org.deeplearning4j.nn.conf.layers.RnnOutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
+import org.nd4j.common.io.ClassPathResource;
 import org.nd4j.evaluation.classification.Evaluation;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.dataset.api.preprocessor.DataNormalization;
 import org.nd4j.linalg.dataset.api.preprocessor.NormalizerMinMaxScaler;
-import org.nd4j.linalg.io.ClassPathResource;
 import org.nd4j.linalg.learning.config.Adam;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.linalg.schedule.CycleSchedule;
@@ -36,12 +36,21 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+// Predictive maintenance techniques are designed to help determine the condition of in-service equipment in order to
+// estimate when maintenance should be performed. Predictive maintenance can be modeled in several ways,
+// 1. Predict the Remaining Useful Life (RUL), or Time to Failure (TTF)
+// 2. Predict if the asset will fail by given a certain time frame
+// 3. Predict critical level of the asset by give a certain time frame
+
+// This example we will look at the 2nd modeling strategy which is to predict weather the asset is going to fail.
+// The label consist of 0 and 1. 0 means the assets is working fine and 1 means it require maintenance.
+
 public class PredictiveMaintenanceBinaryClassification {
     static int sequenceLength = 30;
-    static int batchSize = 128;
+    static int batchSize = 200;
     static int numOfLabel = 2;
     static int labelIndex = 20;
-    static int epochs = 100;
+    static int epochs = 75;
 
     static Logger log = LoggerFactory.getLogger(PredictiveMaintenanceBinaryClassification.class);
 
@@ -139,17 +148,17 @@ public class PredictiveMaintenanceBinaryClassification {
                         .nIn(numInput)
                         .nOut(100)
                         .activation(Activation.TANH)
-                        .dropOut(0.8)
+                        .dropOut(0.9)
                         .build())
                 .layer(new LSTM.Builder()
                         .name("lstm2")
                         .nOut(50)
                         .activation(Activation.TANH)
-                        .dropOut(0.8)
+                        .dropOut(0.9)
                         .build())
                 .layer(new RnnOutputLayer.Builder()
                         .name("output")
-                        .nOut(2)
+                        .nOut(numOfLabel)
                         .lossFunction(LossFunctions.LossFunction.MCXENT)
                         .build())
                 .build();

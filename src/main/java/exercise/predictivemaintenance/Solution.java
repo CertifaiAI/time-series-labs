@@ -1,6 +1,5 @@
 package exercise.predictivemaintenance;
 
-import classification.PredictiveMaintenanceBinaryClassification;
 import org.datavec.api.records.reader.RecordReader;
 import org.datavec.api.records.reader.SequenceRecordReader;
 import org.datavec.api.records.reader.impl.collection.CollectionSequenceRecordReader;
@@ -26,6 +25,8 @@ import org.nd4j.linalg.dataset.api.preprocessor.DataNormalization;
 import org.nd4j.linalg.dataset.api.preprocessor.NormalizerMinMaxScaler;
 import org.nd4j.linalg.learning.config.Adam;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
+import org.nd4j.linalg.schedule.CycleSchedule;
+import org.nd4j.linalg.schedule.ScheduleType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,13 +36,26 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+// Train a model to predict critical levels of asset given a time windows (multi-class classification)
+// The critical level of 0 means asset is running fine,
+// 2 means asset is going to fail soon, 15 cycles away from failure,
+// 1 is intermediate level, 16-30 cycles away from failure.
+// Given a time window, you are required to predict the time window belongs to class 0, 1, or 2.
+
+// Use the dataset provided in "resources/datasets/predictivemaintenance"
+// The train and test dataset consist of features (setting1, setting2, setting, s1, s2, ..., s21)
+// and labels (Remaining Useful Life (RUL), label1, and label2)
+
+// You should use only label2 and remove RUL and label1,
+// since those labels are use for regression and binary classification task
+
 public class Solution {
 
     static int sequenceLength = 30;
-    static int batchSize = 128;
+    static int batchSize = 200;
     static int numOfLabel = 3;
     static int labelIndex = 20;
-    static int epochs = 10;
+    static int epochs = 70;
 
     static Logger log = LoggerFactory.getLogger(Solution.class);
 
@@ -117,27 +131,31 @@ public class Solution {
         trainIter.setPreProcessor(scaler);
         testIter.setPreProcessor(scaler);
 
+        CycleSchedule cycleSchedule = new CycleSchedule(ScheduleType.EPOCH, 0.00001, 0.01, epochs, (int) Math.round(epochs * 0.1), 0.1);
+
         int numInput = trainIter.inputColumns();
         MultiLayerConfiguration config = new NeuralNetConfiguration.Builder()
                 .seed(123)
                 .l2(0.00001)
                 .weightInit(WeightInit.XAVIER)
-                .updater(new Adam(0.001))
+                .updater(new Adam(cycleSchedule))
                 .list()
                 .layer(new LSTM.Builder()
                         .name("lstm")
                         .nIn(numInput)
                         .nOut(100)
+                        .dropOut(0.9)
                         .activation(Activation.TANH)
                         .build())
                 .layer(new LSTM.Builder()
                         .name("lstm2")
                         .nOut(50)
+                        .dropOut(0.9)
                         .activation(Activation.TANH)
                         .build())
-                .layer( new RnnOutputLayer.Builder()
+                .layer(new RnnOutputLayer.Builder()
                         .name("output")
-                        .nOut(2)
+                        .nOut(numOfLabel)
                         .lossFunction(LossFunctions.LossFunction.MCXENT)
                         .build())
                 .build();

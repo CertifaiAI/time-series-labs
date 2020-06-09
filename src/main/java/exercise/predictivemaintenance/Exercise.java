@@ -6,6 +6,19 @@ import org.nd4j.common.io.ClassPathResource;
 import java.io.File;
 import java.io.IOException;
 
+// Train a model to predict critical levels of asset given a time windows (multi-class classification)
+// The critical level of 0 means asset is running fine,
+// 2 means asset is going to fail soon, 15 cycles away from failure,
+// 1 is intermediate level, 16-30 cycles away from failure.
+// Given a time window, you are required to predict the time window belongs to class 0, 1, or 2.
+
+// Use the dataset provided in "resources/datasets/predictivemaintenance"
+// The train and test dataset consist of features (setting1, setting2, setting, s1, s2, ..., s21)
+// and labels (Remaining Useful Life (RUL), label1, and label2)
+
+// You should use only label2 and remove RUL and label1,
+// since those labels are use for regression and binary classification task
+
 public class Exercise {
 
     public static void main(String[] args) throws IOException {

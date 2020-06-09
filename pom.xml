@@ -21,8 +21,9 @@
     </build>
 
     <properties>
-        <!-- Change the nd4j.backend property to nd4j-cuda-10.0-platform, nd4j-cuda-10.1-platform or nd4j-cuda-10.2-platform to use CUDA GPUs -->
         <nd4j.backend>nd4j-native-platform</nd4j.backend>
+        <dl4j.backend>deeplearning4j-cuda-10.0</dl4j.backend>
+
         <nd4j.version>1.0.0-beta7</nd4j.version>
         <dl4j.version>1.0.0-beta7</dl4j.version>
         <slf4j.version>1.7.30</slf4j.version>
@@ -59,6 +60,12 @@
             <artifactId>${nd4j.backend}</artifactId>
             <version>${nd4j.version}</version>
         </dependency>
+<!--        Uncomment the following for GPU computation-->
+<!--        <dependency>-->
+<!--            <groupId>org.deeplearning4j</groupId>-->
+<!--            <artifactId>${dl4j.backend}</artifactId>-->
+<!--            <version>${dl4j.version}</version>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.deeplearning4j</groupId>
@@ -87,7 +94,7 @@
         <dependency>
             <groupId>org.datavec</groupId>
             <artifactId>datavec-local</artifactId>
-            <version>1.0.0-beta7</version>
+            <version>${dl4j.version}</version>
         </dependency>
 
     </dependencies>
