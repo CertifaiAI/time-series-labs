@@ -20,8 +20,7 @@ public class StockIterator implements MultiDataSetIterator {
 
     public StockIterator(RecordReader recordReaderData, int timeStep, int batchSize, int labelIndex, int stride) {
         this.currentBatchIdx = 0 ;
-        this.batchSize = batchSize;
-        this.timeStep = timeStep;
+        this.batchSize = batchSize; //timestep
         this.labelIdx = labelIndex;
         this.stride = stride;
         sequenceData = getSequenceData(recordReaderData);
