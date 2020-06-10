@@ -56,11 +56,10 @@ import java.io.IOException;
  *      |       | [40, 45] |       |
  *      |       | [50, 55] |       |
  *      +-------+----------+-------+
- *      | 3     |          | 125   |
- *      |       | [50, 55] |       |
+ *      | 3     | [50, 55] | 125   |
  *      |       | [60, 65] |       |
  *      +-------+----------+-------+
- *      Note: swe only have 2 sequential data in time series 3, we need to perform preprocessing (masking and padding) on this.
+ *      Note: we only have 2 sequential data in time series 3, we need to perform preprocessing (masking and padding) on this.
  *      Given the sequence shown in each file we would like to predict the output
  *
  *  2. Setup the LSTM configuration
@@ -76,7 +75,7 @@ import java.io.IOException;
  *
  */
 
-public class DataImportMultivariateLSTM {
+public class CSVDataLoader {
     private static int numSkipLines = 0;
     private static int batchSize = 1;
     private static double learningRate = 0.01;
@@ -104,7 +103,13 @@ public class DataImportMultivariateLSTM {
         //Pass RecordReader into dataset iterator
         //training set
         DataSetIterator train = new SequenceRecordReaderDataSetIterator(trainFeatures, trainLabels, batchSize,1, true, SequenceRecordReaderDataSetIterator.AlignmentMode.ALIGN_END);
-
+        //Optional: view data for each batch
+            int j = 0;
+            while (train.hasNext()) {
+                System.out.println("Batch: " + j);
+                System.out.println(train.next());
+                j++;
+            }
         /*
         Take note of the feature shape and the label that we are providing to the model.
         For example in 0.csv, we have:
