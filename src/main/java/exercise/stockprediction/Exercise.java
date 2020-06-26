@@ -1,77 +1,68 @@
 package exercise.stockprediction;
 
-import org.datavec.api.records.reader.RecordReader;
-import org.datavec.api.records.reader.impl.collection.CollectionRecordReader;
-import org.datavec.api.records.reader.impl.csv.CSVRecordReader;
-import org.datavec.api.split.FileSplit;
-import org.datavec.api.transform.TransformProcess;
-import org.datavec.api.transform.condition.Condition;
-import org.datavec.api.transform.condition.column.ColumnCondition;
-import org.datavec.api.transform.condition.column.NaNColumnCondition;
-import org.datavec.api.transform.filter.ConditionFilter;
-import org.datavec.api.transform.filter.Filter;
-import org.datavec.api.transform.schema.Schema;
-import org.datavec.api.transform.transform.time.DeriveColumnsFromTimeTransform;
-import org.datavec.api.util.ndarray.RecordConverter;
-import org.datavec.api.writable.IntWritable;
-import org.datavec.api.writable.Writable;
-import org.datavec.local.transforms.LocalTransformExecutor;
-import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
-import org.joda.time.DateTimeFieldType;
-import org.joda.time.DateTimeZone;
-import org.nd4j.common.io.ClassPathResource;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.nd4j.linalg.factory.Nd4j;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
+/**
+ * Stock price prediction using LSTM
+ * <p>
+ * Steps:
+ * 1. Understand your data
+ * 2. Create a Schema
+ * 3. Create TransformProcess
+ * 4. Load in the data via RecordReader and perform transformation using TransformProcess
+ * 5. Separate the data into batches via iterator
+ * 6. Model creation:
+ * 6.1 create model configuration
+ * 6.2 build the model based on the configuration
+ * 7. Set Listener
+ * 8. Train the model
+ * 9. Evaluate the model
+ * 10.Visualize all test labels vs predictions
+ */
 public class Exercise {
 
-    public static void main(String[] args) throws IOException, InterruptedException {
-        File data = new ClassPathResource("/datasets/StockData/AAPL.csv").getFile();
+    public static void main(String[] args) {
+        Nd4j.getEnvironment().allowHelpers(false);
 
-        Schema schema = new Schema.Builder()
-                .addColumnString("Date") //Date,Open,High,Low,Close,Adj Close,Volume
-                .addColumnDouble("Open")
-                .addColumnDouble("High")
-                .addColumnDouble("Low")
-                .addColumnDouble("Close")
-                .addColumnDouble("Adj Close")
-                .addColumnLong("Volume")
-                .build();
+         /*
+		#### LAB STEP 2 #####
+		Create a schema
+        */
 
-        TransformProcess tp = new TransformProcess.Builder(schema)
-                .stringToTimeTransform("Date", "yyyy-MM-dd", DateTimeZone.UTC)
-                .transform(new DeriveColumnsFromTimeTransform.Builder("Date")
-                        .addIntegerDerivedColumn("year", DateTimeFieldType.year())
-                        .addIntegerDerivedColumn("month", DateTimeFieldType.monthOfYear())
-                        .addIntegerDerivedColumn("day", DateTimeFieldType.dayOfMonth())
-                        .addIntegerDerivedColumn("dayOfWeek", DateTimeFieldType.dayOfWeek())
-                        .build())
-                .removeColumns("Date")
-                .build();
+        /*
+		#### LAB STEP 3 #####
+		Create a TransformProcess
+        */
 
-        int numLinesToSkip = 1;
-        char delimiter = ',';
-        RecordReader recordReader = new CSVRecordReader(numLinesToSkip, delimiter);
-        recordReader.initialize(new FileSplit(data));
+        /*
+		#### LAB STEP 4 #####
+		Load in the data via RecordReader and perform transformation using TransformProcess
+        */
 
-        List<List<Writable>> originalData = new ArrayList<>();
-        while (recordReader.hasNext()) {
-            originalData.add(recordReader.next());
-        }
+         /*
+		#### LAB STEP 5 #####
+		Separate the data into batches via iterator. (See StockIterator for more details)
+        */
 
-        List<List<Writable>> processedData = LocalTransformExecutor.execute(originalData, tp);
-        //Create iterator from processedData
-        RecordReader collectionRecordReader = new CollectionRecordReader(processedData);
-//        DataSetIterator iterator = new RecordReaderDataSetIterator(collectionRecordReader,2,4,2);
-        while(collectionRecordReader.hasNext())
-        {
-            System.out.println(collectionRecordReader.next());
-        }
+        /*
+		#### LAB STEP 7 #####
+		Set listener
+        */
+
+        /*
+		#### LAB STEP 8 #####
+		Train the model
+        */
+
+        /*
+		#### LAB STEP 9 #####
+		Evaluate the model
+        */
+
+        /*
+		#### LAB STEP 10 #####
+		Visualize all test labels vs predictions
+        */
 
     }
 }
