@@ -147,7 +147,7 @@ public class MyCustomTimeSeriesIterator implements DataSetIterator {
     public DataSetPreProcessor getPreProcessor() {
         return null;
     }
-    
+
     @Override
     public boolean hasNext() {
         return this.pointer < numBatches;
@@ -155,7 +155,7 @@ public class MyCustomTimeSeriesIterator implements DataSetIterator {
 
     @Override
     public DataSet next() {
-        if (hasNext()) {
+        if (this.hasNext()) {
             return next(this.batchSize);
         }
         return null;

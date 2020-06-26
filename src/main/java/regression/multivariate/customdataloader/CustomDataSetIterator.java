@@ -73,7 +73,7 @@ public class CustomDataSetIterator {
 
     private static int numFeatures = 2;
     private static double learningRate = 0.01;
-    private static int epoch = 2000;
+    private static int epoch = 500;
 
     public static void main(String[] args) {
 
