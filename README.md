@@ -44,7 +44,7 @@ conda install cudatoolkit=10.2
 ```
 
 ## Usage
-All examples are separated into [training](https://github.com/CertifaiAI/Intro_to_Pytorch/tree/main/training) and [solution](https://github.com/CertifaiAI/Intro_to_Pytorch/tree/main/solution) folders.
+All examples are separated into [training] and [solution] folders.
 
 All notebooks in **training** folder have few lines commented out so that they can be taught and demonstrated in the class. The **solution** folder contains the un-commented version for every line of codes.
 
