@@ -3,3 +3,4 @@
 *.iml
 
 target
+notebook/Trained_models/*
