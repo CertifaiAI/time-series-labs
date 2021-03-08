@@ -114,6 +114,9 @@ class BidirectionalLSTM(nn.Module):
 
 
 def training(num_epochs,train_iter,test_iter,optimiser,loss_fn,model):
+    #seed
+    torch.manual_seed(123)
+    
     train_loss = np.zeros(num_epochs)
     val_loss = np.zeros(num_epochs)
     for t in range(num_epochs):

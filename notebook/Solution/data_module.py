@@ -48,7 +48,7 @@ def univariate_multi_step(sequence,window_size,n_multistep):
 # In[4]:
 
 
-def learning_curve(train_loss,val_loss):
+def learning_curve(num_epochs,train_loss,val_loss):
     plt.figure(figsize=(10,6))
     plt.plot(train_loss, label="Training")
     plt.plot(val_loss, label="Testing")
