@@ -3,3 +3,6 @@
 *.iml
 
 target
+*.pyc
+*.pyc
+notebook/Solution/__pycache__/data_module.cpython-37.pyc
