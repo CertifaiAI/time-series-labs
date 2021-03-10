@@ -113,7 +113,7 @@ class BidirectionalLSTM(nn.Module):
 # In[6]:
 
 
-def training(num_epochs,train_iter,test_iter,optimiser,loss_fn,model):
+def training(num_epochs,train_iter,test_iter,optimizer,loss_fn,model):
     #seed
     torch.manual_seed(123)
     
@@ -138,13 +138,13 @@ def training(num_epochs,train_iter,test_iter,optimiser,loss_fn,model):
             loss_train = loss_fn(y_train_pred, train_Y)
 
             # Zero out gradient, else they will accumulate between epochs
-            optimiser.zero_grad()
+            optimizer.zero_grad()
 
             # Backward pass
             loss_train.backward()
 
             # Update parameters
-            optimiser.step()
+            optimizer.step()
             
             # Summing up the loss over each epoch
             running_loss_train += loss_train.item()*train_X.size(0)
