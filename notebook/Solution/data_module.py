@@ -5,8 +5,11 @@
 
 
 import numpy as np
+import torch
 import matplotlib.pyplot as plt
-
+import math
+from torch.utils.data import DataLoader,TensorDataset
+from sklearn.metrics import mean_squared_error
 
 # In[1]:
 
@@ -26,7 +29,7 @@ def univariate_single_step(sequence, window_size):
     return np.array(x), np.array(y)
 
 
-# In[2]:
+
 
 
 def univariate_multi_step(sequence,window_size,n_multistep):
@@ -45,7 +48,22 @@ def univariate_multi_step(sequence,window_size,n_multistep):
     return np.array(x), np.array(y)
 
 
-# In[4]:
+def multivariate_univariate_single_step(sequence,window_size):
+    x, y = list(), list()
+    for i in range(len(sequence)):
+    # find the end of this pattern
+        end_ix = i + window_size
+        # check if we are beyond the sequence
+        if end_ix > len(sequence):
+            break
+    # gather input and output parts of the pattern
+        seq_x, seq_y = sequence[i:end_ix,:-1], sequence[end_ix-1,-1]
+        x.append(seq_x)
+        y.append(seq_y)
+    return np.array(x), np.array(y)
+
+
+# In[2]: 
 
 
 def learning_curve(num_epochs,train_loss,val_loss):
@@ -61,8 +79,6 @@ def learning_curve(num_epochs,train_loss,val_loss):
         print(f'Epoch : {i} , training loss : {train_loss[i]} , validation loss : {val_loss[i]}')
 
 
-# In[5]:
-
 
 def zoom_learning_curve(start_epoch,end_epoch,training_loss,validation_loss):
     plt.figure(figsize=(10,6))
@@ -77,10 +93,13 @@ def zoom_learning_curve(start_epoch,end_epoch,training_loss,validation_loss):
     plt.legend()
 
 def single_step_plot(original_test_data,sequence_test_data,forecast_data,test_time,window_size,
-                     original_plot =False):
+                     original_plot =False,multivariate = False):
     sequence_test_time = test_time[window_size:]
     plt.figure(figsize=(10,6))
     
+    if multivariate:
+        sequence_test_time = test_time[window_size-1:]
+                                 
     if original_plot:
         plt.plot(test_time,original_test_data,color="blue",label = 'Test Data')
         
@@ -174,13 +193,14 @@ def sanity_check(data_1,data_2):
         print(key_2 +" shape : " + str(data_2[key_2].shape))
 
 # Create Iterator
-def iterator(train_data_dict,test_data_dict):
+def iterator(train_data_dict,test_data_dict,batch_size):
     """ 
     Create iterator for train data and test data 
     
     Arguments:
-    train_data_dict -- train data dictionary 
-    test_data_dict -- test data dictionary
+    train_data_dict -- (dict)train data dictionary 
+    test_data_dict -- (dict)test data dictionary
+    batch_size -- the number of the batch size
     
     Returns: 
     train_iter -- train data iterator 
@@ -227,10 +247,22 @@ def inverse_scaler(scaled_data,scaler):
     """
     
     for item in scaled_data:
-        scaled_data[item] =  scaler.inverse_transform(scaled_data[item])    
+        scaled_data[item] =  scaler.inverse_transform(scaled_data[item].detach().numpy())    
     return scaled_data
     
-
+def list_forecast_value(output_data,prediction):
+    """ 
+    To list the test output and prediction output side by side
+    
+    Arguments:
+    output_data --  (dict) output data dictionary
+    prediction -- (dict) prediction output dictionary
+    """
+    ### BEGIN SOLUTION
+    print("Test Data\t\t\tForecast")
+    for test, forecast in zip(output_data["test_data_output"],prediction["test_data_prediction"]):   
+        print(f"{test}\t\t{forecast}")
+    ### END SOLUTION
 
 # Calculate the RMSE of train and test data
 def rmse(prediction,output_data):
@@ -247,7 +279,7 @@ def rmse(prediction,output_data):
     """
     trainScore = math.sqrt(mean_squared_error(prediction["train_data_prediction"], output_data["train_data_output"]))
     testScore = math.sqrt(mean_squared_error(prediction["test_data_prediction"], output_data["test_data_output"]))
-    return trainScore,test
+    return trainScore,testScore
 
 # Plot forecast plot for multi-step
 def multi_step_plot(original_test_data,
