@@ -8,8 +8,10 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 import math
+import pandas as pd
 from torch.utils.data import DataLoader,TensorDataset
 from sklearn.metrics import mean_squared_error
+from matplotlib.lines import Line2D
 
 # In[1]:
 
@@ -62,6 +64,21 @@ def multivariate_univariate_single_step(sequence,window_size):
         y.append(seq_y)
     return np.array(x), np.array(y)
 
+# Data sequencing function for multivariate input , univariate output , multi step forecast
+def multivariate_univariate_multi_step(sequence,window_size,n_multistep):
+    x, y = list(), list()
+    for i in range(len(sequence)):
+    # find the end of this pattern
+        end_ix = i + window_size
+        out_ix = end_ix + n_multistep -1
+        # check if we are beyond the sequence
+        if out_ix > len(sequence):
+            break
+    # gather input and output parts of the pattern
+        seq_x, seq_y = sequence[i:end_ix,:-1], sequence[end_ix-1:out_ix,-1]
+        x.append(seq_x)
+        y.append(seq_y)
+    return np.array(x), np.array(y)
 
 # In[2]: 
 
@@ -92,23 +109,7 @@ def zoom_learning_curve(start_epoch,end_epoch,training_loss,validation_loss):
     plt.xticks(position, labels)
     plt.legend()
 
-def single_step_plot(original_test_data,sequence_test_data,forecast_data,test_time,window_size,
-                     original_plot =False,multivariate = False):
-    sequence_test_time = test_time[window_size:]
-    plt.figure(figsize=(10,6))
-    
-    if multivariate:
-        sequence_test_time = test_time[window_size-1:]
-                                 
-    if original_plot:
-        plt.plot(test_time,original_test_data,color="blue",label = 'Test Data')
-        
-    plt.plot(sequence_test_time,sequence_test_data,color="green", label = 'Test Data After Sequence')
-    plt.plot(sequence_test_time,forecast_data,color="red", label = 'Forecast')
-    plt.xticks(rotation = 45)
-    plt.ylabel("Value")
-    plt.title("Forecast plot")
-    plt.legend()
+
     
 def key_assign(trainingX,testingX,trainingY,testingY):
     """ 
@@ -281,13 +282,33 @@ def rmse(prediction,output_data):
     testScore = math.sqrt(mean_squared_error(prediction["test_data_prediction"], output_data["test_data_output"]))
     return trainScore,testScore
 
+# Plot forecast plot for single-step
+def single_step_plot(original_test_data,sequence_test_data,forecast_data,test_time,window_size,
+                     original_plot =False,multivariate = False):
+    sequence_test_time = test_time[window_size:]
+    plt.figure(figsize=(10,6))
+    
+    if multivariate:
+        sequence_test_time = test_time[window_size-1:]
+                                 
+    if original_plot:
+        plt.plot(test_time,original_test_data,color="blue",label = 'Test Data')
+        
+    plt.plot(sequence_test_time,sequence_test_data,color="green", label = 'Test Data After Sequence')
+    plt.plot(sequence_test_time,forecast_data,color="red", label = 'Forecast')
+    plt.xticks(rotation = 45)
+    plt.ylabel("Value")
+    plt.title("Forecast plot")
+    plt.legend()
+
 # Plot forecast plot for multi-step
 def multi_step_plot(original_test_data,
                     after_sequence_test_data ,
                     forecast_data,test_time,window_size,
                     n_step ,
                     details = {},
-                    original_plot = False):
+                    original_plot = False,
+                    multivariate = False):
     
     """ 
     Plot the result of multi-step forecast 
@@ -307,6 +328,8 @@ def multi_step_plot(original_test_data,
     after_sequence_test_data = after_sequence_test_data['test_data_output'] 
     forecast_data = forecast_data["test_data_prediction"]
     
+    
+    
     # Plot Setting
     plt.figure(figsize=(10,6))
     plt.xticks(rotation=45)    
@@ -317,7 +340,11 @@ def multi_step_plot(original_test_data,
     y_test_pred_dataframe =pd.DataFrame(forecast_data,columns = column_names)
     
     # Create time index for data after sequence
-    time_index_after_sequence = test_time[window_size:]
+    if multivariate:
+        time_index_after_sequence = test_time[window_size-1:]
+        
+    else:
+        time_index_after_sequence = test_time[window_size:]
     
     # Test Data plot before sliding window(data sequencing)
     if original_plot:
@@ -327,8 +354,11 @@ def multi_step_plot(original_test_data,
     start_idx = 0 
     for row in range(len(y_test_dataframe)):
         
+               
         # Iterate the time index after sequence
         time_index = time_index_after_sequence[start_idx:start_idx+n_step]
+        
+        
         
         # Plot the test data
         plt.plot(time_index,y_test_dataframe.iloc[row],color="green",marker='o')
