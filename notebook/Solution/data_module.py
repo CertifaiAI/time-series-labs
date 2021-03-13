@@ -385,6 +385,9 @@ def multi_step_plot(original_test_data,
     
 # In[ ]:
 
-
+def transpose(train_data_dict,test_data_dict):
+    train_data_dict['train_data_x_feature'] = torch.transpose(train_data_dict['train_data_x_feature'],1,2)
+    test_data_dict['test_data_x_feature'] = torch.transpose(test_data_dict['test_data_x_feature'],1,2)
+    return train_data_dict , test_data_dict
 
 
