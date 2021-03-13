@@ -285,11 +285,13 @@ def rmse(prediction,output_data):
 # Plot forecast plot for single-step
 def single_step_plot(original_test_data,sequence_test_data,forecast_data,test_time,window_size,
                      original_plot =False,multivariate = False):
-    sequence_test_time = test_time[window_size:]
+    
     plt.figure(figsize=(10,6))
     
     if multivariate:
         sequence_test_time = test_time[window_size-1:]
+    else: 
+        sequence_test_time = test_time[window_size:]
                                  
     if original_plot:
         plt.plot(test_time,original_test_data,color="blue",label = 'Test Data')
