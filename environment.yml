@@ -16,4 +16,6 @@ dependencies:
   - pandas
   - notebook
   - pmdarima
+  - pandas-datareader
+  - seaborn
 
