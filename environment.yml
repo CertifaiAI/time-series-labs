@@ -18,4 +18,5 @@ dependencies:
   - pmdarima
   - pandas-datareader
   - seaborn
+  - sktime
 
