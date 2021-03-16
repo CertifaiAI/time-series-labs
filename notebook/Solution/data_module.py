@@ -13,9 +13,11 @@ from torch.utils.data import DataLoader,TensorDataset
 from sklearn.metrics import mean_squared_error
 from matplotlib.lines import Line2D
 
-# In[1]:
 
 
+# Data Sequencing Function 
+
+# Data sequencing function for  univariate input , univariate output , single step forecast
 def univariate_single_step(sequence, window_size):
     x, y = list(), list()
     for i in range(len(sequence)):
@@ -30,9 +32,7 @@ def univariate_single_step(sequence, window_size):
         y.append(seq_y)
     return np.array(x), np.array(y)
 
-
-
-
+# Data sequencing function for univariate input , univariate output , multi step forecast
 
 def univariate_multi_step(sequence,window_size,n_multistep):
     x, y = list(), list()
@@ -49,6 +49,7 @@ def univariate_multi_step(sequence,window_size,n_multistep):
         y.append(seq_y)
     return np.array(x), np.array(y)
 
+# Data sequencing function for multivariate input , univariate output , single step forecast
 
 def multivariate_univariate_single_step(sequence,window_size):
     x, y = list(), list()
@@ -80,9 +81,9 @@ def multivariate_univariate_multi_step(sequence,window_size,n_multistep):
         y.append(seq_y)
     return np.array(x), np.array(y)
 
-# In[2]: 
 
-
+# Learning curve function
+# Plot Learning curve
 def learning_curve(num_epochs,train_loss,val_loss):
     plt.figure(figsize=(10,6))
     plt.plot(train_loss, label="Training")
@@ -95,8 +96,7 @@ def learning_curve(num_epochs,train_loss,val_loss):
     for i in range(num_epochs):
         print(f'Epoch : {i} , training loss : {train_loss[i]} , validation loss : {val_loss[i]}')
 
-
-
+# Zoom specific epoch in learning curve
 def zoom_learning_curve(start_epoch,end_epoch,training_loss,validation_loss):
     plt.figure(figsize=(10,6))
     plt.plot(training_loss[start_epoch:end_epoch], label="Training loss")
@@ -110,7 +110,7 @@ def zoom_learning_curve(start_epoch,end_epoch,training_loss,validation_loss):
     plt.legend()
 
 
-    
+# Data flow function    
 def key_assign(trainingX,testingX,trainingY,testingY):
     """ 
     Use to assgin the key to create the train_data_dict and test_data_dict
@@ -159,7 +159,7 @@ def key_assign_evaluation(y_train_prediction,
                "test_data_output" : test_data_dictionary["test_data_y_label"]}
     return prediction , output_data
 
-
+# Transform the numpy data to torch tensor
 def transform(train_data_dict, test_data_dict):
     """ 
     Transform the numpy data to torch tensor
@@ -179,7 +179,7 @@ def transform(train_data_dict, test_data_dict):
         test_data_dict[test_datapoint] = torch.from_numpy(test_data_dict[test_datapoint]).type(torch.Tensor)
     return train_data_dict,test_data_dict
 
-
+# Check Shape
 def sanity_check(data_1,data_2):
     """ 
     Print the shape of data_1 and data_2
@@ -232,6 +232,12 @@ def squeeze_dimension(output):
         output[key] = torch.squeeze(output[key],2)
     return output
 
+# Transpose function
+def transpose(train_data_dict,test_data_dict):
+    train_data_dict['train_data_x_feature'] = torch.transpose(train_data_dict['train_data_x_feature'],1,2)
+    test_data_dict['test_data_x_feature'] = torch.transpose(test_data_dict['test_data_x_feature'],1,2)
+    return train_data_dict , test_data_dict
+
 
 
 # Invert the scaling back to orignal data value
@@ -282,6 +288,7 @@ def rmse(prediction,output_data):
     testScore = math.sqrt(mean_squared_error(prediction["test_data_prediction"], output_data["test_data_output"]))
     return trainScore,testScore
 
+# Forecast Plot
 # Plot forecast plot for single-step
 def single_step_plot(original_test_data,sequence_test_data,forecast_data,test_time,window_size,
                      original_plot =False,multivariate = False):
@@ -382,12 +389,8 @@ def multi_step_plot(original_test_data,
         plt.xlabel(details["x-axis"])
         plt.ylabel(details["y-axis"])
         plt.title(details["title"])
-    
-# In[ ]:
 
-def transpose(train_data_dict,test_data_dict):
-    train_data_dict['train_data_x_feature'] = torch.transpose(train_data_dict['train_data_x_feature'],1,2)
-    test_data_dict['test_data_x_feature'] = torch.transpose(test_data_dict['test_data_x_feature'],1,2)
-    return train_data_dict , test_data_dict
+
+
 
 
