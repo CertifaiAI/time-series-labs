@@ -10,10 +10,7 @@ from torch.utils.data import DataLoader,TensorDataset
 from sklearn.metrics import mean_squared_error
 from matplotlib.lines import Line2D
 
-
-
-# Data Sequencing Function 
-
+# ------------------------Data Sequencing Function---------------------------------------
 # Data sequencing function for  univariate input , univariate output , single step forecast
 def univariate_single_step(sequence, window_size):
     x, y = list(), list()
@@ -30,7 +27,6 @@ def univariate_single_step(sequence, window_size):
     return np.array(x), np.array(y)
 
 # Data sequencing function for univariate input , univariate output , multi step forecast
-
 def univariate_multi_step(sequence,window_size,n_multistep):
     x, y = list(), list()
     for i in range(len(sequence)):
@@ -47,7 +43,6 @@ def univariate_multi_step(sequence,window_size,n_multistep):
     return np.array(x), np.array(y)
 
 # Data sequencing function for multivariate input , univariate output , single step forecast
-
 def multivariate_univariate_single_step(sequence,window_size):
     x, y = list(), list()
     for i in range(len(sequence)):
@@ -78,8 +73,7 @@ def multivariate_univariate_multi_step(sequence,window_size,n_multistep):
         y.append(seq_y)
     return np.array(x), np.array(y)
 
-
-# Learning curve function
+# ------------------------------------Learning curve function-------------------------------------------
 # Plot Learning curve
 def learning_curve(num_epochs,train_loss,val_loss):
     plt.figure(figsize=(10,6))
@@ -106,8 +100,7 @@ def zoom_learning_curve(start_epoch,end_epoch,training_loss,validation_loss):
     plt.xticks(position, labels)
     plt.legend()
 
-
-# Data flow function    
+#--------------------------------------- Data flow function-----------------------------------------------------    
 def key_assign(trainingX,testingX,trainingY,testingY):
     """ 
     Use to assgin the key to create the train_data_dict and test_data_dict
@@ -253,7 +246,8 @@ def inverse_scaler(scaled_data,scaler):
     for item in scaled_data:
         scaled_data[item] =  scaler.inverse_transform(scaled_data[item].detach().numpy())    
     return scaled_data
-    
+
+# list the test output and prediction output side by side   
 def list_forecast_value(output_data,prediction):
     """ 
     To list the test output and prediction output side by side
@@ -285,7 +279,7 @@ def rmse(prediction,output_data):
     testScore = math.sqrt(mean_squared_error(prediction["test_data_prediction"], output_data["test_data_output"]))
     return trainScore,testScore
 
-# Forecast Plot
+# ------------------------------------------Forecast Plot-----------------------------------------------------
 # Plot forecast plot for single-step
 def single_step_plot(original_test_data,sequence_test_data,forecast_data,test_time,window_size,
                      original_plot =False,multivariate = False):
@@ -333,8 +327,6 @@ def multi_step_plot(original_test_data,
     
     after_sequence_test_data = after_sequence_test_data['test_data_output'] 
     forecast_data = forecast_data["test_data_prediction"]
-    
-    
     
     # Plot Setting
     plt.figure(figsize=(10,6))
