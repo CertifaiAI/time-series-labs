@@ -4,3 +4,4 @@
 
 target
 notebook/Trained_models/*
+*.pyc
