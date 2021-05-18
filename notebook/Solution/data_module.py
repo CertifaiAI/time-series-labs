@@ -228,7 +228,41 @@ def transpose(train_data_dict,test_data_dict):
     test_data_dict['test_data_x_feature'] = torch.transpose(test_data_dict['test_data_x_feature'],1,2)
     return train_data_dict , test_data_dict
 
-
+# Data Scaling for multivariate data 
+def multi_data_scaler(train_data,test_data,scale_mode = "Standardize"):   
+    """ 
+    Perform Data Scalling 
+    
+    Arguments:
+    train_data: Train Data
+    test_data: Test Data
+    scale_mode: Types of scaler ["Normalize": MinMaxScaler(),"Standardize": StandardScaler()]
+    
+    Returns: 
+    scaler, scaled train data. scaled test data
+    """
+    scalers = dict()
+    data_dict = {"train_data":train_data,
+                "test_data":test_data}
+    
+    scale_type ={"Normalize": MinMaxScaler(),
+                "Standardize": StandardScaler()}
+    
+    if scale_mode not in scale_type:
+        print("Invalid scale mode. Expected one of: %s" %scale_type.keys())
+    
+    for columns in train_data.columns:
+        scaler= scale_type[scale_mode].fit(train_data[columns].values.reshape(-1,1))
+        scalers['scaler+'+columns] = scaler
+        
+    for key in data_dict:
+        data_scaled = list()
+        for columns in data_dict[key].columns:
+            data_scaled.append(scaler.transform(data_dict[key][columns].values.reshape(-1,1)))
+        standard_data = np.array(data_scaled)
+        data_dict[key] = np.transpose(np.squeeze(standard_data))
+        
+    return scalers,data_dict["train_data"],data_dict["test_data"]
 
 # Invert the scaling back to orignal data value
 def inverse_scaler(scaled_data,scaler):
