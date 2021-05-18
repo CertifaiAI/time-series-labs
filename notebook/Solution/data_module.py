@@ -8,6 +8,7 @@ import math
 import pandas as pd
 from torch.utils.data import DataLoader,TensorDataset
 from sklearn.metrics import mean_squared_error
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from matplotlib.lines import Line2D
 
 # ------------------------Data Sequencing Function---------------------------------------
