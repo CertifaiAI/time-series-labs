@@ -1,7 +1,5 @@
 .idea
 .ipynb_checkpoints
 *.iml
-
-target
 *.pyc
 
