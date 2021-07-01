@@ -26,6 +26,12 @@ Setup the conda environment by
 conda env create -f environment.yml
 ```
 
+Setup the virtual environment by
+
+```
+pip install -r requirement.txt
+```
+
 The environment setup will take some time to download required modules.
 
 ### GPU Setup (__*optional*__)

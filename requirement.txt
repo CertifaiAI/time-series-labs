@@ -1,0 +1,24 @@
+# Create virtual environment
+# --> python -m venv time-series-lab
+# 
+# Activate virtual environemnet
+# --> directory/env/scripts/activate
+# 
+# (time-series-lab) directory
+#
+# Install the dependencies using requirement.txt
+# --> (time-series-lab) directory>pip install -r requirement.txt
+
+
+--find-links https://download.pytorch.org/whl/torch_stable.html
+torch==1.9.0+cpu
+ipykernel
+scikit-learn
+matplotlib
+pandas
+notebook
+pmdarima
+pandas-datareader
+seaborn
+sktime
+libarchive
