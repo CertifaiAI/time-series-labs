@@ -2,7 +2,7 @@
 # --> python -m venv time-series-lab
 # 
 # Activate virtual environemnet
-# --> directory/env/scripts/activate
+# --> directory - env\scripts\activate
 # 
 # (time-series-lab) directory
 #
