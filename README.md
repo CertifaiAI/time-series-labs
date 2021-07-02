@@ -20,10 +20,18 @@ Download and install [Anaconda](https://www.anaconda.com/products/individual).
 
 ### Environment Setup
 
-Setup the conda environment by
+You can install the dependencies through any of the following ways:
+
+1. Setup the virtual environment using `conda` by
 
 ```
 conda env create -f environment.yml
+```
+
+2. Setup the virtual environment using `virtualenv` with Python version 3.8 by
+
+```
+pip install -r requirement.txt
 ```
 
 The environment setup will take some time to download required modules.
