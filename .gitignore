@@ -1,5 +1,7 @@
 .idea
 .ipynb_checkpoints
 *.iml
-*.pyc
 
+target
+notebook/Trained_models/*
+*.pyc
