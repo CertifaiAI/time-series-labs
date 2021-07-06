@@ -1,4 +1,4 @@
-name: test-time-series-labs
+name: time-series-labs
 channels:
   - pytorch
   - saravji
