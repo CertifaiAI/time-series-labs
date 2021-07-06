@@ -18,4 +18,8 @@ dependencies:
   - pandas-datareader
   - seaborn
   - sktime
+  - pip
+  - pip: 
+    - yfinance== 0.1.60
+
 
