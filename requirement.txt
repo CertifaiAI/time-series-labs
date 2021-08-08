@@ -1,0 +1,11 @@
+--find-links https://download.pytorch.org/whl/torch_stable.html
+torch==1.8.1+cpu
+ipykernel
+scikit-learn
+matplotlib
+pandas
+notebook
+pmdarima
+pandas-datareader
+seaborn
+sktime
